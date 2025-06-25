@@ -43,6 +43,75 @@ The script automatically handles architecture detection and gets the latest stab
 
 ```
 ---
+- name: Enable and configure SFTP on Ubuntu
+  hosts: all
+  become: yes
+  
+  tasks:
+    - name: Install OpenSSH server
+      apt:
+        name: openssh-server
+        state: present
+        update_cache: yes
+
+    - name: Ensure SSH service is running
+      systemd:
+        name: ssh
+        state: started
+        enabled: yes
+
+    - name: Check if SFTP subsystem is enabled in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^Subsystem\s+sftp'
+        line: 'Subsystem sftp /usr/lib/openssh/sftp-server'
+        state: present
+        backup: yes
+      notify: restart ssh
+
+    - name: Allow SFTP in SSH configuration (if not already present)
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?AllowUsers'
+        line: '# AllowUsers - configure as needed'
+        state: present
+        backup: yes
+      notify: restart ssh
+
+    - name: Ensure SSH allows password authentication (optional)
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+        state: present
+        backup: yes
+      notify: restart ssh
+
+    - name: Check SSH port configuration
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?Port'
+        line: 'Port 22'
+        state: present
+        backup: yes
+      notify: restart ssh
+
+    - name: Test SSH configuration
+      command: sshd -t
+      register: sshd_test
+      changed_when: false
+
+    - name: Display SSH configuration test result
+      debug:
+        msg: "SSH configuration is valid"
+      when: sshd_test.rc == 0
+
+  handlers:
+    - name: restart ssh
+      systemd:
+        name: ssh
+        state: restarted
+---
 - name: Install Docker and Docker Compose on Ubuntu
   hosts: all
   become: yes
