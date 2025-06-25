@@ -1,3 +1,12 @@
+# Ubuntu
+
+## Install ansible
+
+```bash
+sudo apt update
+sudo apt install ansible
+```
+
 ## Key features of this playbook:
 
 - **Automatically gets latest versions**: Uses Docker's official repository for Docker CE and GitHub API for Docker Compose latest release
