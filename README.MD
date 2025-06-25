@@ -26,9 +26,6 @@ your-server-ip ansible_user=your-username
 ```
 
 3. **Run the playbook**:
-```bash
-ansible-playbook -i hosts.ini install-docker.yml
-```
 
 For local installation:
 ```bash
